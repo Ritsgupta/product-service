@@ -5,19 +5,23 @@ import com.dev.productservice.dto.ProductResponse;
 import com.dev.productservice.entity.Product;
 import com.dev.productservice.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
+        log.info("Creating product entity using sku: {}", request.getSku());
         Product product = Product.builder()
                 .sku(request.getSku())
                 .name(request.getName())
@@ -27,11 +31,19 @@ public class ProductService {
                 .build();
 
         Product saved = productRepository.save(product);
+        log.info("successfully created product with sku:{} & id:{}", product.getSku(),product.getId());
         return mapToResponse(saved);
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllProductsOnCustomPageAndSize(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
         return productRepository.findAll(pageable)
                 .map(this::mapToResponse);
     }
