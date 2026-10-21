@@ -21,7 +21,6 @@ public class ProductService {
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        log.info("Creating product entity using sku: {}", request.getSku());
         Product product = Product.builder()
                 .sku(request.getSku())
                 .name(request.getName())
@@ -31,7 +30,7 @@ public class ProductService {
                 .build();
 
         Product saved = productRepository.save(product);
-        log.info("successfully created product with sku:{} & id:{}", product.getSku(),product.getId());
+        log.info("Created product id={} sku={}", saved.getId(), saved.getSku());
         return mapToResponse(saved);
     }
 
@@ -65,7 +64,9 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
 
-        return mapToResponse(productRepository.save(product));
+        Product updated = productRepository.save(product);
+        log.info("Updated product id={}", updated.getId());
+        return mapToResponse(updated);
     }
 
     @Transactional
@@ -74,6 +75,7 @@ public class ProductService {
             throw new RuntimeException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
+        log.info("Deleted product id={}", id);
     }
 
     private ProductResponse mapToResponse(Product product) {
